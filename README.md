@@ -1,5 +1,5 @@
 # Cardano Staking Pool Terraform Module
-Terraform module which creates required components within cloud providers to operate a staking pool.
+Terraform module which creates required infrastructure to launch a cloud 'instance' (Virtual Machine) and runs cloud-init based on input provided to this module.
 
 ## Usage
 ```
