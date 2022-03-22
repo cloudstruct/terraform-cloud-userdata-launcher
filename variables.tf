@@ -9,7 +9,7 @@ variable "cloud_provider" {
   type        = string
   default     = "aws"
   validation {
-    condition = contains(["aws"], var.cloud_provider)
+    condition     = contains(["aws"], var.cloud_provider)
     error_message = "Allowed values for input_parameter are \"aws\"."
   }
 }
@@ -25,7 +25,7 @@ variable "ssh_public_key" {
   type        = string
   default     = ""
   validation {
-    condition = length(var.ssh_public_key) == 0 || can(regex("(AAAAB3NzaC1yc2EA|AAAAC3NzaC1lZDI1NTE5)", var.ssh_public_key))
+    condition     = length(var.ssh_public_key) == 0 || can(regex("(AAAAB3NzaC1yc2EA|AAAAC3NzaC1lZDI1NTE5)", var.ssh_public_key))
     error_message = "An invalid SSH key has been specified in \"var.ssh_public_key\".  Please check https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html for instructions."
   }
 }
@@ -51,7 +51,7 @@ variable "key_pair_tags" {
 variable "cloudinit_packages" {
   description = "A list of packages required by cloud-init to perform the software launch."
   type        = list(string)
-  default     = [
+  default = [
     "awscli",
     "jq",
     "unzip",
@@ -59,4 +59,20 @@ variable "cloudinit_packages" {
     "python3-venv",
     "python3-docker",
   ]
+}
+
+variable "code_package_public" {
+  description = "A boolean value which determines if the downloaded code package is a public URL or a private object storage URI requiring IAM privileges."
+  type        = bool
+  default     = true
+}
+
+variable "bootstrap_objectstorage_bucket_name" {
+  description = "The name of the object storage bucket which contains the code package to execute on the node."
+  type        = string
+  default     = ""
+  validation {
+    condition     = length(var.bootstrap_objectstorage_bucket_name) == 0 || (length(var.bootstrap_objectstorage_bucket_name) > 2 && length(var.bootstrap_objectstorage_bucket_name) < 64 && lower(var.bootstrap_objectstorage_bucket_name) == var.bootstrap_objectstorage_bucket_name)
+    error_message = "Variable \"bootstrap_objectstorage_bucket_name\" does not meet AWS S3 Bucket naming rules.  Please check https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html."
+  }
 }
