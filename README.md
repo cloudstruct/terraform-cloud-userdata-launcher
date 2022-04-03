@@ -19,6 +19,11 @@ Report issues/questions/feature requests on in the [issues](https://github.com/c
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.1 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.63 |
 
+## Testing
+### AWS
+Inside this directory execute
+`terraform plan -var-file="tests/aws-testing.tfvars" -compact-warnings`
+
 ## Authors
 Module is maintained by [CloudStruct](https://github.com/cloudstruct) with help from [these awesome contributors](https://github.com/cloudstruct/terraform-cloud-cardano-staking-pool/graphs/contributors).
 
