@@ -30,6 +30,8 @@ variable "ssh_public_key" {
   }
 }
 
+# TODO: Remove this in the next PR
+# tflint-ignore: terraform_unused_declarations
 variable "ssh_key_pair" {
   description = "If \"create_ssh_keypair\" is set to false, use this variable to specify a pre-existing cloud key-pair. Mutually exclusive with \"create_ssh_keypair\"."
   type        = string
@@ -48,6 +50,8 @@ variable "key_pair_tags" {
   default     = {}
 }
 
+# TODO: Remove this in the next PR
+# tflint-ignore: terraform_unused_declarations
 variable "cloudinit_packages" {
   description = "A list of packages required by cloud-init to perform the software launch."
   type        = list(string)

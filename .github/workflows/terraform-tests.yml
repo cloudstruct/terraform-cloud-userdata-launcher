@@ -1,0 +1,84 @@
+name: TerraForm-Tests
+
+env:
+  TF_CLI_CONFIG_FILE: "${GITHUB_WORKSPACE}/.github/files/terraformrc"
+  TF_IN_AUTOMATION: 'true'
+  PIP_CACHE_DIR: "~/.cache/pip"
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/terraform-tests.yml'
+      - 'requirements.txt'
+      - '*.tf'
+      - '.terraform*'
+      - '.tflint.hcl'
+      - 'tests/*.tf'
+      - 'tests/*.tfvars'
+      - 'tests/.terraform*'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: terraform-compliance/github_action@main
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.CICD_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.CICD_AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - uses: actions/cache@v2
+        name: Cache dir
+        with:
+          path: ~/.cache
+          key: ${{ hashFiles('.terraform.lock.hcl') }}-${{ hashFiles('.tflint.hcl') }}-${{ hashFiles('requirements.txt') }}
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init -input=false
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      - name: Execute TFLint
+        id: tflint
+        run: |
+          tflint --version
+          tflint --init -c .tflint.hcl
+          tflint -c .tflint.hcl .
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+            terraform plan -var-file="tests/aws-testing.tfvars" -compact-warnings -input=false -lock=false -out=tf.plan
+            terraform show -json tf.plan > plan.json
+
+      - name: terraform-compliance-remote
+        id: terraform-compliance-user-friendly-features
+        run: terraform-compliance -p plan.json -f git:https://github.com/cloudstruct/terraform-compliance-tests.git//?ref=main
+
+      - name: terraform-compliance-local
+        id: terraform-compliance-local
+        run: terraform-compliance -p plan.json -f .github/terraform-compliance
