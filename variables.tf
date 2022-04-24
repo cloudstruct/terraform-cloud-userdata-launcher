@@ -118,6 +118,7 @@ variable "cloudinit_runcmd" {
   ]
 }
 
+#tflint-ignore: terraform_unused_declarations
 variable "instance_external_ip" {
   description = "Whether or not to provision the instance with an external IP address."
   type = bool
@@ -140,6 +141,16 @@ variable "instance_type" {
   default = "m6g.large"
   validation {
     condition = length(var.instance_type) > 1
+    error_message = "Instance type failed length check.  Please ensure you are providing a valid instance type for your cloud provider."
+  }
+}
+
+variable "aws_instance_profile_role_name" {
+  description = "The AWS IAM role name to attach to the instance profile for the instance launched by this module."
+  type = string
+  default = ""
+  validation {
+    condition = length(var.aws_instance_profile_role_name) == 0 || (length(var.aws_instance_profile_role_name) < 65 && can(regex("[\\w+=,.@-]+", var.aws_instance_profile_role_name)))
     error_message = "Instance type failed length check.  Please ensure you are providing a valid instance type for your cloud provider."
   }
 }
@@ -197,6 +208,7 @@ variable "ebs_block_device" {
   default     = []
 }
 
+#tflint-ignore: terraform_unused_declarations
 variable "aws_route53_zone_arn" {
   description = "The AWS Route53 Zone ID to use for Service Discovery."
   type = string
