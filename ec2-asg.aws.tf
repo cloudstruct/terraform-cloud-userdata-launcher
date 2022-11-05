@@ -49,12 +49,12 @@ resource "aws_ebs_volume" "node_data" {
   }
 
   availability_zone = each.value.availability_zone
-  encrypted             = lookup(each.value, "encrypted", null)
-  iops                  = lookup(each.value, "iops", null)
-  kms_key_id            = lookup(each.value, "kms_key_id", null)
-  size = lookup(each.value, "volume_size", null)
-  throughput            = lookup(each.value, "throughput", null)
-  type = lookup(each.value, "volume_type", null)
+  encrypted         = lookup(each.value, "encrypted", null)
+  iops              = lookup(each.value, "iops", null)
+  kms_key_id        = lookup(each.value, "kms_key_id", null)
+  size              = lookup(each.value, "volume_size", null)
+  throughput        = lookup(each.value, "throughput", null)
+  type              = lookup(each.value, "volume_type", null)
 
   tags = merge(
     var.tags,
@@ -94,7 +94,7 @@ resource "aws_autoscaling_group" "node" {
     for_each = merge(
       var.tags,
       {
-        Name              = "${var.name}-node"
+        Name = "${var.name}-node"
       },
     )
 

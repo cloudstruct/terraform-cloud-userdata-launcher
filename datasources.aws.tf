@@ -1,8 +1,8 @@
 locals {
   create_s3_bootstrap_policy = !var.code_package_public && var.cloud_provider == "aws" && length(var.bootstrap_objectstorage_bucket_name) != 0
-  use_aws_ubuntu_ami = var.operating_system == "ubuntu" && var.cloud_provider == "aws"
-  use_aws_external_ip = var.cloud_provider == "aws" && var.instance_external_ip
-  use_aws_ebs_volumes = var.cloud_provider == "aws" && length(var.ebs_block_device) > 0
+  use_aws_ubuntu_ami         = var.operating_system == "ubuntu" && var.cloud_provider == "aws"
+  use_aws_external_ip        = var.cloud_provider == "aws" && var.instance_external_ip
+  use_aws_ebs_volumes        = var.cloud_provider == "aws" && length(var.ebs_block_device) > 0
   ami_map = {
     ubuntu = {
       filters = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*"]
@@ -61,7 +61,7 @@ data "aws_s3_bucket" "bootstrap" {
 
 # Lookup AMI
 data "aws_ami" "ami" {
-  for_each = { for k, v in { "ubuntu" = "os"} : k => v if local.use_aws_ubuntu_ami }
+  for_each = { for k, v in { "ubuntu" = "os" } : k => v if local.use_aws_ubuntu_ami }
 
   most_recent = true
 
@@ -80,26 +80,16 @@ data "aws_ami" "ami" {
 }
 
 # Cloud-init config template
-data "template_cloudinit_config" "node" {
+data "cloudinit_config" "node" {
   count = var.cloud_provider == "aws" ? 1 : 0
 
-  gzip = false
+  gzip          = false
+  base64_encode = true
 
-  # TODO:  This will be getting modified to supply input to an external script
-  #  I have to build the cardano-node-ansible repo out before modifying this to be accurate
   part {
     filename     = "init.cfg"
     content_type = "text/cloud-config"
-    content      = <<-EOF
-    #cloud-config
-    packages: ${join("\n  -", var.cloudinit_packages)}
-    runcmd: ${join("\n  -", var.cloudinit_runcmd)}
-    write_files:
-      - path: '/usr/local/bin/bootstrap.sh'
-        permissions: '0755'
-        owner: 'root:root'
-        content: "IGNORE_ME"
-    EOF
+    content      = var.cloudinit_content
   }
 }
 
